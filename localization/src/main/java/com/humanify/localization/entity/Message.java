@@ -21,30 +21,17 @@ public class Message
 	@Column(name="msgText")
 	private String text;
 	
-	public Long getId() {
-		return id;
-	}
-	public void setId(Long id) {
-		this.id = id;
-	}
-	public Locale getLocale() {
-		return locale;
-	}
-	public void setLocale(Locale locale) {
-		this.locale = locale;
-	}
-	public String getKey() {
-		return key;
-	}
-	public void setKey(String key) {
-		this.key = key;
-	}
-	public String getText() {
-		return text;
-	}
-	public void setText(String text) {
-		this.text = text;
-	}
+	public Long getId() { return id; }
+	public void setId(Long id) { this.id = id; }
+	
+	public Locale getLocale() { return locale; }
+	public void setLocale(Locale locale) { this.locale = locale; }
+	
+	public String getKey() { return key; }
+	public void setKey(String key) { this.key = key; }
+	
+	public String getText() { return text; }
+	public void setText(String text) { this.text = text; }
 
 	protected Message() {}
 	

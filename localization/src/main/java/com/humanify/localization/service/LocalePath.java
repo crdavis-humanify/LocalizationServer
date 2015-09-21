@@ -4,8 +4,8 @@ import java.util.Iterator;
 
 public class LocalePath implements Iterable<String>
 {
-	private final String userLocale;
-	private final String tenant;
+	private final String userLocale;	// the user-visible locale
+	private final String tenant;		// the tenant name for overrides, or null
 
 	LocalePath(String locale, String tenant)
 	{
@@ -13,6 +13,7 @@ public class LocalePath implements Iterable<String>
 		this.tenant = tenant;
 	}
 	
+	// Construct from string which may or may not include tenant override
 	LocalePath(String locale)
 	{
 		int ix = locale.indexOf("-[");
@@ -63,6 +64,9 @@ public class LocalePath implements Iterable<String>
 		return new LocaleIterator();
 	}
 	
+	
+	// Locale path iterator
+	// Provides a path from most-specific to least-specific locale, with tenant overrides interleaved at each level
 	class LocaleIterator implements Iterator<String>
 	{
 		private boolean applyTenant;

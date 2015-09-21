@@ -8,6 +8,9 @@ import com.humanify.localization.entity.Locale;
 import com.humanify.localization.entity.Source;
 import com.humanify.localization.exception.InconsistentDataException;
 
+// A table representing all of the locales defined for a given source.
+// Key is locale string, value is the MessageTable for that locale.
+//
 public class LocaleTable
 {
 	

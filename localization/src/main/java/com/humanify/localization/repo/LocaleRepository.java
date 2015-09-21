@@ -13,6 +13,6 @@ public interface LocaleRepository extends CrudRepository<Locale, Long>
 {
 	
 	public Set<Locale> findBySource(Source source);	
-	public Locale findBySourceAndTag(Source source, String tag);
+	public Locale findOneBySourceAndTag(Source source, String tag);
 
 }

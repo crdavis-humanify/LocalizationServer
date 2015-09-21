@@ -176,7 +176,7 @@ public class LocalizationController
 	
 	// Upload a properties file containing message definitions
 	//
-	@RequestMapping(value="/admin/install", method=RequestMethod.POST)
+	@RequestMapping(value="/admin/upload", method=RequestMethod.POST)
 	public ResponseEntity<ServerResponse> handleFileUpload(@RequestParam("file") MultipartFile file) throws LocalizationServerException, IOException
 	{
 		if (file.isEmpty())

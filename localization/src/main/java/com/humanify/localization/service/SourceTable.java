@@ -6,6 +6,9 @@ import java.util.Set;
 import com.humanify.localization.entity.Source;
 import com.humanify.localization.exception.InconsistentDataException;
 
+// Table of message sources.  This is the top level table in the service.
+// Key is source name, value is LocaleTable for that source.
+//
 public class SourceTable
 {
 	

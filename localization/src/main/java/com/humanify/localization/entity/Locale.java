@@ -52,7 +52,7 @@ public class Locale
 	@Override
 	public String toString()
 	{
-		return String.format("Locale[id:%d, tag:%s, src:%s]", id, tag, source.toString());
+		return String.format("Locale[id:%d, tag:%s, lastMod:%d, src:%s]", id, tag, lastModified, source.toString());
 	}
 	
 }

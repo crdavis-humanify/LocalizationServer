@@ -7,6 +7,9 @@ import com.humanify.localization.entity.Locale;
 import com.humanify.localization.entity.Message;
 import com.humanify.localization.exception.InconsistentDataException;
 
+// A table of messages for a given source and locale.
+// Key is the message key, value is the message text.
+//
 public class MessageTable
 {
 	private final Locale locale;

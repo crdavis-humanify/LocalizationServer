@@ -311,7 +311,7 @@ public class LocalizationService
 	private void replaceMessageSetFromDb(String sourceName, LocalePath localePath) throws InconsistentDataException
 	{
 		Source source = sourceRepo.findOneByName(sourceName);
-		Locale locale = localeRepo.findBySourceAndTag(source, localePath.getLocaleString());
+		Locale locale = localeRepo.findOneBySourceAndTag(source, localePath.getLocaleString());
 		initializeLocaleFromDb(source, locale);
 	}
 	
