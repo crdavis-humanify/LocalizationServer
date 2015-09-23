@@ -30,6 +30,10 @@ public class LocalizationController
 	@Autowired
 	LocalizationService service;
 	
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// Installed Messages
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	
 	// List installed sources
 	//
 	@RequestMapping(value="/installed/source", method=RequestMethod.GET)
@@ -55,6 +59,33 @@ public class LocalizationController
 		LocalePath localePath = new LocalePath(canonicalizeLocale(localeString));
 		return OkResponse.create(service.retrieveMessageSet(canonicalizeSource(sourceName), localePath));
 	}
+	
+	// Upload a properties file containing message definitions
+	//
+	@RequestMapping(value="/installed/upload", method=RequestMethod.POST)
+	public ResponseEntity<ServerResponse> handleFileUpload(@RequestParam("file") MultipartFile file) throws LocalizationServerException, IOException
+	{
+		if (file.isEmpty())
+			throw new BadRequestException("Definitions source file is empty.");
+		
+		InputStream is = file.getInputStream();
+		Properties properties = new Properties();
+		properties.load(is);
+		String source = canonicalizeSource(properties.getProperty("SOURCE"));
+		properties.remove("SOURCE");
+		String localeString = canonicalizeLocale(properties.getProperty("LOCALE"));
+		properties.remove("LOCALE");
+		LocalePath localePath = new LocalePath(localeString);
+		
+		Map<String, String> defs = new HashMap<String, String>();
+		properties.entrySet().stream().forEach(e -> defs.put((String) e.getKey(), (String) e.getValue()));
+		UpdateResults results = service.updateMessageSet(source, localePath, defs, false);
+		return OkResponse.create(results);
+	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// Localized Messages
+	/////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	// Resolve a single message for a source / key / locale / tenant
 	//
@@ -104,6 +135,10 @@ public class LocalizationController
 		LocalePath localePath = new LocalePath(canonicalizeLocale(localeString));
 		return OkResponse.create(service.resolveLocalizedMessageSet(canonicalizeSource(sourceName), localePath));
 	}
+	
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// Per-tenant Override Messages
+	/////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	// Retrieve the tenant override message set for a tenant / source / locale
 	//
@@ -174,32 +209,13 @@ public class LocalizationController
 		return OkResponse.create(service.retrieveAllTenantOverrides(canonicalizeTenant(tenant)));
 	}
 	
-	// Upload a properties file containing message definitions
-	//
-	@RequestMapping(value="/admin/upload", method=RequestMethod.POST)
-	public ResponseEntity<ServerResponse> handleFileUpload(@RequestParam("file") MultipartFile file) throws LocalizationServerException, IOException
-	{
-		if (file.isEmpty())
-			throw new BadRequestException("Definitions source file is empty.");
-		
-		InputStream is = file.getInputStream();
-		Properties properties = new Properties();
-		properties.load(is);
-		String source = canonicalizeSource(properties.getProperty("SOURCE"));
-		properties.remove("SOURCE");
-		String localeString = canonicalizeLocale(properties.getProperty("LOCALE"));
-		properties.remove("LOCALE");
-		LocalePath localePath = new LocalePath(localeString);
-		
-		Map<String, String> defs = new HashMap<String, String>();
-		properties.entrySet().stream().forEach(e -> defs.put((String) e.getKey(), (String) e.getValue()));
-		UpdateResults results = service.updateMessageSet(source, localePath, defs, false);
-		return OkResponse.create(results);
-	}
+	/////////////////////////////////////////////////////////////////////////////////////////////////
+	// Debugging
+	/////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	// Dump all data
 	//
-	@RequestMapping(value="/admin/dump", method=RequestMethod.GET)
+	@RequestMapping(value="/debug/dump", method=RequestMethod.GET)
 	public ResponseEntity<ServerResponse> dump()
 	{
 		return OkResponse.create(service.dump());
@@ -207,7 +223,7 @@ public class LocalizationController
 	
 	// Force the server to reinitialize from the database
 	//
-	@RequestMapping(value="/admin/reinit", method=RequestMethod.PUT)
+	@RequestMapping(value="/debug/reinit", method=RequestMethod.PUT)
 	public ResponseEntity<ServerResponse> reinit() throws LocalizationServerException
 	{
 		service.initializeFromDb();
@@ -216,11 +232,13 @@ public class LocalizationController
 	
 	// Retrieve table from db
 	//
-	@RequestMapping(value="/admin/db/{table}", method=RequestMethod.GET)
+	@RequestMapping(value="/debug/db/{table}", method=RequestMethod.GET)
 	public ResponseEntity<ServerResponse> dumpDatabaseTable(@PathVariable("table") String table)
 	{
 		return OkResponse.create(service.dumpDatabaseTable(table));
 	}
+	
+	////////////////////////////////////////////////////////////////////////////////////////////////
 	
 	private String canonicalizeSource(String sourceName) throws BadRequestException
 	{
