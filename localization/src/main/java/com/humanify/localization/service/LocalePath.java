@@ -4,28 +4,31 @@ import java.util.Iterator;
 
 public class LocalePath implements Iterable<String>
 {
-	private final String userLocale;	// the user-visible locale
+	public static final String OVERRIDE_PREFIX = "-[";
+	public static final String OVERRIDE_SUFFIX = "]";
+	
+	private final String baseLocale;	// the user-visible locale
 	private final String tenant;		// the tenant name for overrides, or null
 
 	LocalePath(String locale, String tenant)
 	{
-		this.userLocale = locale;
+		this.baseLocale = locale;
 		this.tenant = tenant;
 	}
 	
 	// Construct from string which may or may not include tenant override
 	LocalePath(String locale)
 	{
-		int ix = locale.indexOf("-[");
+		int ix = locale.indexOf(OVERRIDE_PREFIX);
 		if (ix < 0)
 		{
-			this.userLocale = locale;
+			this.baseLocale = locale;
 			this.tenant = null;
 		}
 		else
 		{
-			this.userLocale = locale.substring(0,  ix);
-			this.tenant = locale.substring(ix + 2, locale.lastIndexOf(']'));
+			this.baseLocale = locale.substring(0,  ix);
+			this.tenant = locale.substring(ix + 2, locale.lastIndexOf(OVERRIDE_SUFFIX));
 		}
 	}
 	
@@ -36,12 +39,12 @@ public class LocalePath implements Iterable<String>
 	
 	public String getOverrideLocale()
 	{
-		return String.format("%s-[%s]", userLocale, tenant);
+		return String.format("%s%s%s%s", baseLocale, OVERRIDE_PREFIX, tenant, OVERRIDE_SUFFIX);
 	}
 	
-	public String getUserLocale()
+	public String getBaseLocale()
 	{
-		return userLocale;
+		return baseLocale;
 	}
 	
 	public String getTenant()
@@ -54,7 +57,7 @@ public class LocalePath implements Iterable<String>
 		if (hasTenantOverride())
 			return getOverrideLocale();
 		else
-			return getUserLocale();
+			return getBaseLocale();
 	}
 	
 	
@@ -76,8 +79,8 @@ public class LocalePath implements Iterable<String>
 		LocaleIterator()
 		{
 			applyTenant = (null != tenant);
-			lastIndex = userLocale.length();
-			tenantTag = (null != tenant) ? "-[" + tenant + "]" : null;
+			lastIndex = baseLocale.length();
+			tenantTag = (null != tenant) ? OVERRIDE_PREFIX + tenant + OVERRIDE_SUFFIX : null;
 		}
 
 		@Override
@@ -89,7 +92,7 @@ public class LocalePath implements Iterable<String>
 		@Override
 		public String next()
 		{
-			String value = userLocale.substring(0, lastIndex);
+			String value = baseLocale.substring(0, lastIndex);
 			if (applyTenant)
 			{
 				value = value + tenantTag;
@@ -97,7 +100,7 @@ public class LocalePath implements Iterable<String>
 			}
 			else
 			{
-				lastIndex = userLocale.substring(0, lastIndex).lastIndexOf('-');
+				lastIndex = baseLocale.substring(0, lastIndex).lastIndexOf('-');
 				applyTenant = (null != tenant);
 			}
 			return value;

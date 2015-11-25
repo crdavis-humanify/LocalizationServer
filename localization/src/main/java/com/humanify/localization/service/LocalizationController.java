@@ -209,6 +209,32 @@ public class LocalizationController
 		return OkResponse.create(service.retrieveAllTenantOverrides(canonicalizeTenant(tenant)));
 	}
 	
+	// Retrieve list of tenants
+	//
+	@RequestMapping(value="/tenant", method=RequestMethod.GET)
+	public ResponseEntity<ServerResponse> listTenants() throws LocalizationServerException
+	{
+		return OkResponse.create(service.listTenants());
+	}
+	
+	// Retrieve list of sources overridden by tenant, regardless of locale
+	//
+	@RequestMapping(value="/tenant/{tenant}/source", method=RequestMethod.GET)
+	public ResponseEntity<ServerResponse> listTenantSources(
+			@PathVariable("tenant") String tenant) throws LocalizationServerException
+	{
+		return OkResponse.create(service.listTenantSources(canonicalizeTenant(tenant)));
+	}
+	
+	// Retrieve list of locales overridden by tenant, regardless of source
+	//
+	@RequestMapping(value="/tenant/{tenant}/locale", method=RequestMethod.GET)
+	public ResponseEntity<ServerResponse> listTenantLocales(
+			@PathVariable("tenant") String tenant) throws LocalizationServerException
+	{
+		return OkResponse.create(service.listTenantLocales(canonicalizeTenant(tenant)));
+	}
+	
 	/////////////////////////////////////////////////////////////////////////////////////////////////
 	// Debugging
 	/////////////////////////////////////////////////////////////////////////////////////////////////

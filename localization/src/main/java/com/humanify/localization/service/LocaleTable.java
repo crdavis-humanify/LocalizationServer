@@ -62,15 +62,17 @@ public class LocaleTable
 		return messageTbl;
 	}
 	
-	public Set<String> listAllLocales()
+	public Set<String> listLocales()
 	{
 		return localeMap.keySet();
 	}
 	
-	public Set<String> listUserLocales()
+	public Set<String> listBaseLocales()
 	{
-		return localeMap.keySet().stream().filter(k -> !(new LocalePath(k).hasTenantOverride())).collect(Collectors.toSet());
+		return localeMap.keySet()
+			.stream()
+			.filter(ls -> ls.indexOf(LocalePath.OVERRIDE_PREFIX) == -1)
+			.collect(Collectors.toSet());
 	}
 	
-
 }

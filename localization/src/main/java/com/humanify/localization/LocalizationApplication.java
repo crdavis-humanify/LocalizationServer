@@ -9,7 +9,6 @@ import org.springframework.web.servlet.DispatcherServlet;
 
 import com.humanify.localization.service.LocalizationService;
 
-// TODO: security for admin and tenant APIs
 // TODO: publish update notifications on MQ bus
 
 

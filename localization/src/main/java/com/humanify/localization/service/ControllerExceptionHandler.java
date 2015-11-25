@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 import org.springframework.web.servlet.NoHandlerFoundException;
-import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 import com.humanify.localization.exception.BadRequestException;
@@ -18,7 +17,6 @@ import com.humanify.localization.model.ErrorDetail;
 import com.humanify.localization.model.ErrorResponse;
 import com.humanify.localization.model.ServerResponse;
 
-@EnableWebMvc
 @ControllerAdvice
 public class ControllerExceptionHandler extends ResponseEntityExceptionHandler
 {

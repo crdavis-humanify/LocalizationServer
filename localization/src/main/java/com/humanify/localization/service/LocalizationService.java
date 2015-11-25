@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -103,7 +104,7 @@ public class LocalizationService
 		LocaleTable localeTbl = sourceTbl.get(sourceName);
 		if (null != localeTbl)
 		{
-			return localeTbl.listUserLocales();
+			return localeTbl.listBaseLocales();
 		}
 		
 		return Collections.emptySet();
@@ -113,7 +114,7 @@ public class LocalizationService
 	{
 		LocalizedMessageResult result = new LocalizedMessageResult();
 		result.source = sourceName;
-		result.locale = localePath.getUserLocale();
+		result.locale = localePath.getBaseLocale();
 		result.tenant = localePath.getTenant();
 		result.message = resolveMessage(sourceName, key, localePath);
 		return result;
@@ -123,7 +124,7 @@ public class LocalizationService
 	{
 		LocalizedMessageSet result = resolveMessageSet(sourceName, localePath);
 		result.source = sourceName;
-		result.locale = localePath.getUserLocale();
+		result.locale = localePath.getBaseLocale();
 		result.tenant = localePath.getTenant();
 		return result;
 	}
@@ -132,7 +133,7 @@ public class LocalizationService
 	{
 		LocalizedMessageSet result = getMessageSet(sourceName, localePath);
 		result.source = sourceName;
-		result.locale = localePath.getUserLocale();
+		result.locale = localePath.getBaseLocale();
 		result.tenant = localePath.getTenant();
 		return result;
 	}
@@ -143,14 +144,14 @@ public class LocalizationService
 		for (String sourceName : sourceTbl.listSources())
 		{
 			LocaleTable localeTbl = sourceTbl.get(sourceName);
-			for (String localeString : localeTbl.listAllLocales())
+			for (String localeString : localeTbl.listLocales())
 			{
 				LocalePath localePath = new LocalePath(localeString);
 				if (tenant.equals(localePath.getTenant()))
 				{
 					LocalizedMessageSet messageSet = getMessageSet(sourceName, localePath);
 					messageSet.source = sourceName;
-					messageSet.locale = localePath.getUserLocale();
+					messageSet.locale = localePath.getBaseLocale();
 					messageSet.tenant = localePath.getTenant();
 					result.add(messageSet);
 				}
@@ -163,14 +164,14 @@ public class LocalizationService
 	{
 		Set<LocalizedMessageSet> result = new HashSet<LocalizedMessageSet>();
 		LocaleTable localeTbl = sourceTbl.get(sourceName);
-		for (String localeString : localeTbl.listAllLocales())
+		for (String localeString : localeTbl.listLocales())
 		{
 			LocalePath localePath = new LocalePath(localeString);
 			if (tenant.equals(localePath.getTenant()))
 			{
 				LocalizedMessageSet messageSet = getMessageSet(sourceName, localePath);
 				messageSet.source = sourceName;
-				messageSet.locale = localePath.getUserLocale();
+				messageSet.locale = localePath.getBaseLocale();
 				messageSet.tenant = localePath.getTenant();
 				result.add(messageSet);
 			}
@@ -185,14 +186,14 @@ public class LocalizationService
 		for (String sourceName : sourceTbl.listSources())
 		{
 			LocaleTable localeTbl = sourceTbl.get(sourceName);
-			for (String localeString : localeTbl.listAllLocales())
+			for (String localeString : localeTbl.listLocales())
 			{
 				LocalePath localePath = new LocalePath(localeString);
 				if ((null != desiredLocale.getTenant()) && desiredLocale.getTenant().equals(localePath.getTenant()))
 				{
 					LocalizedMessageSet messageSet = getMessageSet(sourceName, localePath);
 					messageSet.source = sourceName;
-					messageSet.locale = desiredLocale.getUserLocale();
+					messageSet.locale = desiredLocale.getBaseLocale();
 					messageSet.tenant = desiredLocale.getTenant();
 					result.add(messageSet);
 				}
@@ -200,6 +201,52 @@ public class LocalizationService
 		}
 		
 		return result;
+	}
+	
+	synchronized Set<String> listTenants()
+	{
+		Set<String> tenants = new HashSet<String>();
+		for (String sourceName : sourceTbl.listSources())
+		{
+			LocaleTable localeTbl = sourceTbl.get(sourceName);
+			for (String localeString : localeTbl.listLocales())
+			{
+				LocalePath path = new LocalePath(localeString);
+				if (path.hasTenantOverride())
+					tenants.add(path.getTenant());
+			}
+		}
+		
+		return tenants;
+	}
+	
+	synchronized Set<String> listTenantSources(String tenant)
+	{
+		return sourceTbl.listSources()
+			.stream()
+			.filter(s -> sourceTbl.get(s).listLocales()
+						.stream()
+						.map(ls -> new LocalePath(ls))
+						.anyMatch(lp -> tenant.equals(lp.getTenant())))
+			.collect(Collectors.toSet());		
+	}
+	
+	synchronized Set<String> listTenantLocales(String tenant)
+	{
+		Set<String> locales = new HashSet<String>();
+		
+		for (String sourceName : sourceTbl.listSources())
+		{
+			LocaleTable localeTbl = sourceTbl.get(sourceName);
+			locales = localeTbl.listLocales()
+					.stream()
+					.map(ls -> new LocalePath(ls))
+					.filter(lp -> tenant.equals(lp.getTenant()))
+					.map(lp -> lp.getBaseLocale())
+					.collect(Collectors.toSet());
+		}
+		
+		return locales;
 	}
 	
 	synchronized UpdateResults updateMessageSet(String sourceName, LocalePath localePath, Map<String, String> definitions, boolean allowDelete) throws InconsistentDataException
@@ -322,7 +369,7 @@ public class LocalizationService
 		for (String source : sourceTbl.listSources())
 		{
 			LocaleTable localeTbl = sourceTbl.get(source);
-			for (String locale : localeTbl.listAllLocales())
+			for (String locale : localeTbl.listLocales())
 			{
 				LocalizedMessageSet messageSet = retrieveMessageSet(source, new LocalePath(locale));
 				result.add(messageSet);
@@ -403,7 +450,7 @@ public class LocalizationService
 		
 		LocalizedMessage oops = new LocalizedMessage();
 		oops.key = key;
-		oops.text = String.format("[[Undefined message %s.%s in locale %s]]", sourceName, key, localePath.getUserLocale());
+		oops.text = String.format("[[Undefined message %s.%s in locale %s]]", sourceName, key, localePath.getBaseLocale());
 		return oops;
 	}
 	
@@ -429,8 +476,8 @@ public class LocalizationService
 		
 		LocaleTable localeTbl = sourceTbl.get(sourceName);
 		if (null != localeTbl)
-		{
-			for (String tag : localeTbl.listUserLocales())
+		{	
+			for (String tag : localeTbl.listBaseLocales())
 			{
 				MessageTable messageTbl = localeTbl.get(tag);
 				result.addAll(messageTbl.getKeys());
