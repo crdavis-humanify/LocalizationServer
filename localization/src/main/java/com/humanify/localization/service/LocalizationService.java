@@ -96,18 +96,21 @@ public class LocalizationService
 	
 	synchronized Set<String> listSources()
 	{
-		return sourceTbl.listSources();
+		Set<String> result = new HashSet<String>();
+		result.addAll(sourceTbl.listSources());
+		return result;
 	}
 	
 	synchronized Set<String> listLocales(String sourceName)
 	{
+		Set<String> result = new HashSet<String>();
 		LocaleTable localeTbl = sourceTbl.get(sourceName);
 		if (null != localeTbl)
 		{
-			return localeTbl.listBaseLocales();
+			result.addAll(localeTbl.listBaseLocales());
 		}
 		
-		return Collections.emptySet();
+		return result;
 	}
 	
 	synchronized LocalizedMessageResult resolveLocalizedMessage(String sourceName, String key, LocalePath localePath)
