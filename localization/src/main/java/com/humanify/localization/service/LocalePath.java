@@ -4,10 +4,12 @@ import java.util.Iterator;
 
 public class LocalePath implements Iterable<String>
 {
+	// Format of tenant override tag is -[tenant]
 	public static final String OVERRIDE_PREFIX = "-[";
 	public static final String OVERRIDE_SUFFIX = "]";
+	public static final char SEPARATOR = '-';
 	
-	private final String baseLocale;	// the user-visible locale
+	private final String baseLocale;	// the standard, basic locale
 	private final String tenant;		// the tenant name for overrides, or null
 
 	LocalePath(String locale, String tenant)
@@ -28,7 +30,7 @@ public class LocalePath implements Iterable<String>
 		else
 		{
 			this.baseLocale = locale.substring(0,  ix);
-			this.tenant = locale.substring(ix + 2, locale.lastIndexOf(OVERRIDE_SUFFIX));
+			this.tenant = locale.substring(ix + OVERRIDE_PREFIX.length(), locale.lastIndexOf(OVERRIDE_SUFFIX));
 		}
 	}
 	
@@ -100,7 +102,7 @@ public class LocalePath implements Iterable<String>
 			}
 			else
 			{
-				lastIndex = baseLocale.substring(0, lastIndex).lastIndexOf('-');
+				lastIndex = baseLocale.substring(0, lastIndex).lastIndexOf(SEPARATOR);
 				applyTenant = (null != tenant);
 			}
 			return value;
